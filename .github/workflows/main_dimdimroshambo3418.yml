@@ -24,11 +24,16 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
+      - name: Rename WAR to ROOT for Tomcat root deployment
+        run: |
+          mkdir -p deploy_dir
+          cp target/*.war deploy_dir/ROOT.war || cp target/*.jar deploy_dir/ROOT.jar
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: 'target/*'
+          path: 'deploy_dir/*'
 
   deploy:
     runs-on: ubuntu-latest
