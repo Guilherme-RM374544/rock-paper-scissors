@@ -1,3 +1,6 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
 name: Build and deploy JAR app to Azure Web App - dimdimroshambo3418
 
 on:
@@ -10,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read #This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
@@ -22,25 +25,20 @@ jobs:
           distribution: 'microsoft'
 
       - name: Build with Maven
-        run: mvn clean package -DskipTests
-
-      - name: Rename WAR to ROOT for Tomcat root deployment
-        run: |
-          mkdir -p deploy_dir
-          cp target/*.war deploy_dir/ROOT.war || cp target/*.jar deploy_dir/ROOT.jar
+        run: mvn clean install
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: java-app
-          path: 'deploy_dir/*'
+          path: '${{ github.workspace }}/target/*.jar'
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write
-      contents: read
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
   
     steps:
       - name: Download artifact from build job
@@ -51,9 +49,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_64667BD7F23A4AC9A2577604559E3667 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_7163DC7C546048D085569061B89B5B74 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_96152245D2FD423DBFDE05EA921C6F5E }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_E305D6E063844AC99F1A30DF8C273612 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_18EBF21AA4AD47B394E5BC82D9D32FC1 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A02F85E9FA654D7E8D9B17790DC8C3ED }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -61,4 +59,5 @@ jobs:
         with:
           app-name: 'dimdimroshambo3418'
           slot-name: 'Production'
-          package: '.'
+          package: '*.jar'
+          
